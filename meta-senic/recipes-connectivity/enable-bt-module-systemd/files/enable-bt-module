@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# This is a script called by systemd
+
+# In case of restarting the the service
+# the interface should be unexported.
+# The "|| true" and 2> /dev/null are
+# hacks  not to go into conditionals in sh
+echo "203" > /sys/class/gpio/unexport 2> /dev/null || true
+echo "203" > /sys/class/gpio/export
+echo "out" > /sys/class/gpio/gpio203/direction
+echo "0" > /sys/class/gpio/gpio203/value
+echo "1" > /sys/class/gpio/gpio203/value
+
+# After the pin conditions have been set
+# the device needs to be "attached" which
+# means the HCI communication must be established
+# through UART /dev/ttyS1 so that the rest of
+# the bluetooth stack can take over
+
+/usr/bin/btattach -B /dev/ttyS1 -S 115200
+
+# The btattach should block forever
+# unless externally interupted
+exit 1
